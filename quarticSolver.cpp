@@ -111,9 +111,9 @@ unsigned int quarticSolver(double * ce, double *roots)
         t2[1]= -p - t2[0];
         if ( t2[0] >= 0. ) {// four real roots
             roots[0]=sqrt(t2[0])-shift;
-            roots[1]= -roots[0]-shift;
+            roots[1]= -sqrt(t2[0])-shift;
             roots[2]=sqrt(t2[1])-shift;
-            roots[3]= -roots[2]-shift;
+            roots[3]= -sqrt(t2[1])-shift;
             return 4;
         }
         if ( t2[1] >= 0.) { // two real roots
