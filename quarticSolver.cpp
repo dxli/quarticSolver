@@ -1,8 +1,66 @@
 // find real roots for quartic equations with real coefficients
 // Author: Dongxu Li
-// Written for the LibreCAD project: http://librecad.org/
 //
-#include"quarticSolver.h"
+#include "quarticSolver.h"
+#include <unsupported/Eigen/Polynomials>
+
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <iterator>
+#include <vector>
+
+
+//polynomial solver for monic polynomials
+// \Sum_{i=0}^n a[i] x^i = 0
+// e.g.
+// a[2] x^2 + a[1] x + a[0] =0
+// a[3] x^3 + a[2] x^2 + a[1] x + a[0]=0
+// a[4] x^4 + a[3] x^3 + a[2] x^2 + a[1] x + a[0]=0
+std::vector<double> eigenSolver(const std::vector<double>& coeffA)
+{
+    if (coeffA.empty())
+        return {};
+
+    std::cout<<"eigen solver begin"<<std::endl;
+    using namespace Eigen;
+    VectorXd coeff =  VectorXd::Map(coeffA.data(), coeffA.size());
+
+    Eigen::PolynomialSolver<double, Eigen::Dynamic> psolve(coeff);
+    std::cout << "Complex roots: " << psolve.roots().transpose() << std::endl;
+    std::vector<double> realRoots;
+    psolve.realRoots( realRoots );
+    Map<VectorXd> mapRR(realRoots.data(), realRoots.size());
+    std::cout << "Real roots: " << mapRR.transpose() << std::endl;
+    std::cout<<"eigen solver end"<<std::endl;
+    return realRoots;
+}
+
+//polynomial solver for monic polynomials, real roots only
+// x^2 + ce[0] x + ce[1] =0
+// x^3 + ce[0] x^2 + ce[1] x + ce[2]=0
+// x^4 + ce[0] x^3 + ce[1] x^2 + ce[2] x + ce[3]=0
+// etc.
+std::vector<double> eigenSolverMonic(const std::vector<double>& coefficients)
+{
+    if (coefficients.empty())
+        return {};
+
+    std::cout<<"eigen monic solver begin"<<std::endl;
+
+    // eigen solver uses monic polynomials:
+    // a[0] + a[1] x + a[2] x^2 + ... + a[n] x^n
+    // with a[n] = 1
+    std::vector<double> ceRev;
+    std::copy(coefficients.rbegin(), coefficients.rend(), std::back_inserter(ceRev));
+    ceRev.push_back(1.);
+
+    const auto realRoots = eigenSolver(ceRev);
+
+    std::cout<<"eigen monic solver end"<<std::endl;
+    return realRoots;
+
+}
 
 // ce is a pointer to an array of equation coefficients
 // root is a pointer to roots to be stored,
@@ -10,7 +68,7 @@
 //
 unsigned int quadraticSolver(double * ce,  double * roots)
 //quadratic solver for
-// x^2 + ce[0] x + ce[2] =0
+// x^2 + ce[0] x + ce[1] =0
 {
     double discriminant=0.25*ce[0]*ce[0]-ce[1];
     if (discriminant < 0. ) return 0;
@@ -184,9 +242,14 @@ unsigned int quarticSolver(double * ce, double *roots)
 
 }
 
+void testEigen()
+{
+    eigenSolverMonic({{1.87832,-0.0950376,-1.87832,-0.882024}});
+}
 
 int main(int argc, char * argv[])
 {
+    testEigen();
     unsigned int counts;
     double ce[4]= {1.87832,-0.0950376,-1.87832,-0.882024};
     unsigned int j=5;
