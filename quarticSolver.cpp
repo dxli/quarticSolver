@@ -4,12 +4,11 @@
 #include "quarticSolver.h"
 #include <unsupported/Eigen/Polynomials>
 
+#include <iostream>
 #include <algorithm>
 #include <cmath>
 #include <complex>
 #include <iterator>
-#include <vector>
-
 
 //polynomial solver for monic polynomials
 // \Sum_{i=0}^n a[i] x^i = 0
